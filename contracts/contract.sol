@@ -94,4 +94,38 @@ contract Auction{
         // emit oracle(rand);
         return uint128(int128(keccak256(block.timestamp, block.difficulty))%notary_size)%uint128(notary_size);
     }
+    function bidderRegister(uint256[][] items, uint256[2] input) public returns(uint256){
+        assert(now<endtime);
+        assert(!notaries[msg.sender].is_valid && !bidder[msg.sender].is_valid && auctioneer!=msg.sender);
+        // if(notaries[msg.sender].is_valid || bidder[msg.sender].is_valid || auctioneer==msg.sender) throw;
+        //get random number
+        // if(notary_no>=notary_size) throw;
+        assert(notary_no<notary_size);
+        uint256 num_items=items.length;
+        // if(num_items<=0 || num_items>M) throw;
+        assert(num_items>0 && num_items<=M);
+        // if(notaries[notary_map[notary_no]].assigned==true) throw;
+        
+        bidder_map[bidder_size]=msg.sender;
+        bidder_size=bidder_size+1;
+        int128 num=notary_no;
+        // int128 num=int128(randomgenerator());
+        // while(notaries[notary_map[num]].assigned==true)
+        // {
+        //     num=int128(randomgenerator());
+        // }
+        emit randomnumber(num);
+        notaries[notary_map[num]].assigned=true;
+        notaries[notary_map[num]].bidder=msg.sender;
+        bidder[msg.sender].notary=notary_map[num];
+        // notaries[notary_map[notary_no]].assigned==true;
+        // notaries[notary_map[notary_no]].bidder=msg.sender;
+        // bidder[msg.sender].notary=notary_map[notary_no];
+        bidder[msg.sender].is_valid=true;
+        notary_no=notary_no+1;
+        bidder[msg.sender].no_items=num_items;
+        notaries[bidder[msg.sender].notary].input_items=items;
+        notaries[bidder[msg.sender].notary].input_value=input;
+        emit Assignment(msg.sender,bidder[msg.sender].notary);
+    }
 }
