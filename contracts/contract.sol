@@ -65,4 +65,10 @@ contract Auction{
         notary_map[notary_size]=msg.sender;
         notary_size=notary_size+1;
     }
+    function randomgenerator() private returns(uint128)
+    {
+        // bytes32 rand=oraclize_query("WolframAlpha", "random number between 0 and 100");
+        // emit oracle(rand);
+        return uint128(int128(keccak256(block.timestamp, block.difficulty))%notary_size)%uint128(notary_size);
+    }
 }
