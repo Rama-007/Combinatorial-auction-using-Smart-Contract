@@ -199,4 +199,22 @@ contract Auction{
         if (i < right)
             sort(i, right);
     }
+    function intersection (uint256[][] items,uint256[][] upcoming) private returns(bool)
+    {
+
+        for(uint i=0;i<upcoming.length;i++)
+        {
+            // c=[upcoming[i][0],upcoming[i][1]];
+            for(uint j=0;j<items.length;j++)
+            {
+                // d=[items[j][0],items[j][1]];
+                if(comparator([upcoming[i][0],upcoming[i][1]],[items[j][0],items[j][1]])==2)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    event vals(Notaries kk);
 }
