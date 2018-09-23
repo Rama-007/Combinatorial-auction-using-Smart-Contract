@@ -57,4 +57,12 @@ contract Auction{
         bidder_size=0;
         notary_no=0;
     }
+    function notaryRegister() public{
+        assert(!notaries[msg.sender].is_valid && !bidder[msg.sender].is_valid && auctioneer!=msg.sender);
+        assert(now<endtime);
+        // if(notaries[msg.sender].is_valid || bidder[msg.sender].is_valid || auctioneer==msg.sender) throw;
+        notaries[msg.sender].is_valid=true;
+        notary_map[notary_size]=msg.sender;
+        notary_size=notary_size+1;
+    }
 }
