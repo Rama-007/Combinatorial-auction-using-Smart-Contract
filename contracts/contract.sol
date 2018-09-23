@@ -36,12 +36,7 @@ contract Auction{
         bool is_valid;
         uint256 interaction;
     }
-    
-    event Assignment(address bidd, address not);
-    event randomnumber(int128 num);
-    event pay(int128 k, int128 j, uint256 num);
-    event equal_item(uint[2]a, uint[2] b);
-    event oracle(bytes32 rand);
+   
     
     mapping (address => Notaries) notaries;
     mapping (int128 => address) notary_map;
