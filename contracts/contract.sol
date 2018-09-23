@@ -146,4 +146,26 @@ contract Auction{
         }
         return y;
     }
+    function comparator(uint[2] a, uint[2] b) private returns (uint)
+    {
+        int val1=int(a[0])-int(b[0]);
+        int val2=int(a[1])-int(b[1]);
+        if(val1<0)
+        {
+            if(val2<0)
+            {
+                assert((-1*(val1+val2))>(-1*val1));
+            }
+        }
+        if(val1>0 && val2>0)
+        {
+            assert((val1+val2)>val1);
+        }
+        // return val1;
+        if(val1+val2==0)
+            return 2;
+        else if((val1+val2+int(q))%int(q)<int(q)/2)
+            return 1;
+        return 0;
+    }
 }
