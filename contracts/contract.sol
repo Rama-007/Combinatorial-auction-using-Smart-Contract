@@ -67,13 +67,14 @@ contract Auction is usingOraclize{
     event pay(int128 k, int128 j, uint256 num);
     event equal_item(uint[2]a, uint[2] b);
     event oracle(bytes32 rand);
+    event amount(uint256 amt);
     
     mapping (address => Notaries) notaries;
     mapping (int128 => address) notary_map;
     int128[] public winner;
     uint256[] public payments;
     
-    constructor(uint _q, uint256 _M, uint _biddingTime)
+    constructor(uint _q, uint256 _M, uint _biddingTime) payable
     {
         starttime=now;
         endtime=starttime+(_biddingTime*60);
@@ -314,14 +315,15 @@ contract Auction is usingOraclize{
         assert(msg.sender==auctioneer && now<endtime && !winner_flag);
         cancelled=true;
     }
-    function reward_notaries() public
+    function reward_notaries() public payable
     {
-        assert(!cancelled && winner_flag);
+        assert(msg.sender==auctioneer && !cancelled && winner_flag);
         for(int128 i=0;i<notary_no;i++)
         {
             if(notaries[notary_map[i]].assigned==true)
             {
-                notary_map[i].transfer(notaries[notary_map[i]].interaction*rew);
+                emit amount(rew);
+                assert(notary_map[i].send(notaries[notary_map[i]].interaction*rew));
             }
         }
     }
