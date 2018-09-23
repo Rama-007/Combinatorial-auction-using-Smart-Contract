@@ -300,4 +300,9 @@ contract Auction{
         get_payments();
         return winner;
     }
+    function cancel()
+    {
+        assert(msg.sender==auctioneer && now<endtime);
+        cancelled=true;
+    }
 }
