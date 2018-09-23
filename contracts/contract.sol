@@ -5,7 +5,6 @@ import "github.com/oraclize/ethereum-api/oraclizeAPI.sol";
 
 
 contract Auction{
-    using SafeMath for uint256;
     //static
     address auctioneer;
     uint public startBlock;
