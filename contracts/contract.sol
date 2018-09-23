@@ -168,4 +168,35 @@ contract Auction{
             return 1;
         return 0;
     }
+    function sort(int128 left, int128 right) private
+    {
+        int128 i=left;
+        int128 j=right;
+        address pivot = notary_map[left + (right - left)/2];
+        while (i <= j) {
+            while((i<=right)&&(comparator(notaries[notary_map[i]].input_value,notaries[pivot].input_value)==1 || notaries[pivot].assigned==false))
+            {
+                notaries[notary_map[i]].interaction+=1;
+                notaries[pivot].interaction+=1;
+                i++;
+            }
+            // while (arr[i] < pivot) i++;
+            // while (pivot < arr[j]) j--;
+            while((j>=0)&&(comparator(notaries[notary_map[j]].input_value,notaries[pivot].input_value)==0 || notaries[notary_map[j]].assigned==false))
+            {
+                notaries[notary_map[j]].interaction+=1;
+                notaries[pivot].interaction+=1;
+                j--;
+            }
+            if (i <= j) {
+                (notary_map[i], notary_map[j]) = (notary_map[j], notary_map[i]);
+                i++;
+                j--;
+            }
+        }
+        if (left < j)
+            sort(left, j);
+        if (i < right)
+            sort(i, right);
+    }
 }
