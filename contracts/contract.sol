@@ -217,4 +217,87 @@ contract Auction{
         return false;
     }
     event vals(Notaries kk);
+    function get_payments() private returns(uint256[])
+    {
+        bool flag;
+        for(uint256 k=0;k<winner.length;k++)
+        {
+            uint256 ans=0;
+            int128 l=winner[k];
+            emit pay(l,l,ans);
+            emit vals(notaries[notary_map[l]]);
+            flag=false;
+            for(int128 j=0;j<notary_no;j++)
+            {
+                for(int128 i=0;i<j;i++)
+                {
+                    if(i==l)
+                        continue;
+                    if(notaries[notary_map[j]].assigned!=false && intersection(notaries[notary_map[j]].input_items,notaries[notary_map[i]].input_items)==true)
+                    {
+                       notaries[notary_map[j]].interaction+=notaries[notary_map[i]].input_items.length;
+                       notaries[notary_map[j]].interaction+=notaries[notary_map[j]].input_items.length;
+                       flag=true; 
+                       break; 
+                    }
+                }
+                if(flag==false)
+                {
+                    if(intersection(notaries[notary_map[j]].input_items,notaries[notary_map[l]].input_items)==true)
+                    {
+                        notaries[notary_map[j]].interaction+=notaries[notary_map[l]].input_items.length;
+                        notaries[notary_map[l]].interaction+=notaries[notary_map[j]].input_items.length;
+                        ans=(notaries[notary_map[j]].input_value[0]+notaries[notary_map[j]].input_value[1])%q;
+                        emit pay(int128(notaries[notary_map[j]].input_value[0]),int128(notaries[notary_map[j]].input_value[1]),ans);
+                        
+                        ans=ans*sqrt(notaries[notary_map[l]].input_items.length);
+                        emit pay(l,j,ans);
+                        break;
+                    }
+                }
+            }
+            payments.push(ans);
+        }
+        // return payments;
+    }
+    
+    function find_winner() returns(int128[])
+    {
+        assert(msg.sender==auctioneer);
+        sort(0,notary_size-1);
+        winner.push(0);
+        // for(uint i=0;i<notaries[notary_map[0]].input_items.length;i++)
+        // {
+        //     bid_items.push(notaries[notary_map[0]].input_items[i]);
+        // }
+        bool flag=false;
+        for(int128 j=1;j<notary_no;j++)
+        {
+            flag=false;
+            for(int128 k=0;k<int128(winner.length);k++)
+            {
+                if(notaries[notary_map[j]].assigned==false||intersection(notaries[notary_map[j]].input_items,notaries[notary_map[k]].input_items))
+                {
+                    notaries[notary_map[j]].interaction+=notaries[notary_map[k]].input_items.length;
+                    notaries[notary_map[k]].interaction+=notaries[notary_map[j]].input_items.length;
+                    flag=true;
+                    break;
+                }
+            }
+            if(flag==true)
+                continue;
+            winner.push(j);
+            // if(notaries[notary_map[j]].assigned==false||intersection(notaries[notary_map[j]].input_items,bid_items))
+            // {
+            //     continue;
+            // }
+            // for(uint i=0;i<notaries[notary_map[j]].input_items.length;i++)
+            // {
+            //     winner.push(j);
+            //     bid_items.push(notaries[notary_map[j]].input_items[i]);
+            // }
+        }
+        get_payments();
+        return winner;
+    }
 }
