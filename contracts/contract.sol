@@ -1,5 +1,7 @@
 pragma solidity ^0.4.15;
 pragma experimental ABIEncoderV2;
+import "github.com/oraclize/ethereum-api/oraclizeAPI.sol";
+
 
 library SafeMath {
   function mul(uint256 a, uint256 b) internal constant returns (uint256) {
@@ -27,11 +29,11 @@ library SafeMath {
   }
 }
 
-contract Auction{
+contract Auction is usingOraclize{
     //static
     address auctioneer;
-    uint public startBlock;
-    uint public endBlock;
+    uint public starttime;
+    uint public endtime;
     uint256 public q;//large prime
     uint256 public M;// Number of items
     
@@ -41,6 +43,7 @@ contract Auction{
     int128 bidder_size;
     int128 notary_no;
     uint256 rew=1;
+    bool winner_flag=false;
     
     struct Bidder{
         address notary;
@@ -67,13 +70,13 @@ contract Auction{
     
     mapping (address => Notaries) notaries;
     mapping (int128 => address) notary_map;
-    int128[] winner;
-    uint256[] payments;
+    int128[] public winner;
+    uint256[] public payments;
     
-    constructor(uint _q, uint256 _M, uint _no_of_Blocks)
+    constructor(uint _q, uint256 _M, uint _biddingTime)
     {
-        startBlock=block.number;
-        endBlock=startBlock+_no_of_Blocks;
+        starttime=now;
+        endtime=starttime+(_biddingTime*60);
         // if (_startBlock >= _endBlock) throw;
         // if (_startBlock < block.number) throw;
         auctioneer=msg.sender;
@@ -108,6 +111,10 @@ contract Auction{
         assert(notary_no<notary_size);
         uint256 num_items=items.length;
         // if(num_items<=0 || num_items>M) throw;
+        for(uint i=0;i<num_items;i++)
+        {
+            assert(items[i].length==2);
+        }
         assert(num_items>0 && num_items<=M);
         // if(notaries[notary_map[notary_no]].assigned==true) throw;
         
@@ -235,10 +242,10 @@ contract Auction{
                         continue;
                     if(notaries[notary_map[j]].assigned!=false && intersection(notaries[notary_map[j]].input_items,notaries[notary_map[i]].input_items)==true)
                     {
-                       notaries[notary_map[j]].interaction+=notaries[notary_map[i]].input_items.length;
-                       notaries[notary_map[j]].interaction+=notaries[notary_map[j]].input_items.length;
-                       flag=true; 
-                       break; 
+                      notaries[notary_map[j]].interaction+=notaries[notary_map[i]].input_items.length;
+                      notaries[notary_map[j]].interaction+=notaries[notary_map[j]].input_items.length;
+                      flag=true; 
+                      break; 
                     }
                 }
                 if(flag==false)
@@ -258,12 +265,12 @@ contract Auction{
             }
             payments.push(ans);
         }
-        // return payments;
+        return payments;
     }
     
     function find_winner() returns(int128[])
     {
-        assert(msg.sender==auctioneer);
+        assert(msg.sender==auctioneer && now>endtime && !winner_flag);
         sort(0,notary_size-1);
         winner.push(0);
         // for(uint i=0;i<notaries[notary_map[0]].input_items.length;i++)
@@ -297,12 +304,25 @@ contract Auction{
             //     bid_items.push(notaries[notary_map[j]].input_items[i]);
             // }
         }
+        winner_flag=true;
         get_payments();
         return winner;
     }
+    
     function cancel()
     {
-        assert(msg.sender==auctioneer && now<endtime);
+        assert(msg.sender==auctioneer && now<endtime && !winner_flag);
         cancelled=true;
+    }
+    function reward_notaries() public
+    {
+        assert(!cancelled && winner_flag);
+        for(int128 i=0;i<notary_no;i++)
+        {
+            if(notaries[notary_map[i]].assigned==true)
+            {
+                notary_map[i].transfer(notaries[notary_map[i]].interaction*rew);
+            }
+        }
     }
 }
