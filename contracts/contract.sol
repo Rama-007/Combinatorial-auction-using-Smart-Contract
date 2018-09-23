@@ -318,13 +318,19 @@ contract Auction is usingOraclize{
     function reward_notaries() public payable
     {
         assert(msg.sender==auctioneer && !cancelled && winner_flag);
+        uint256 sum=0;
         for(int128 i=0;i<notary_no;i++)
         {
             if(notaries[notary_map[i]].assigned==true)
             {
-                emit amount(rew);
+                sum+=notaries[notary_map[i]].interaction*rew;
+                emit amount(notaries[notary_map[i]].interaction*rew);
                 assert(notary_map[i].send(notaries[notary_map[i]].interaction*rew));
             }
+        }
+        if(sum<msg.value)
+        {
+            auctioneer.send(msg.value-sum);
         }
     }
 }
